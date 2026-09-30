@@ -72,11 +72,11 @@ Xây dựng toàn bộ API cốt lõi: Auth, Transfer (với MultiLock + Idempot
 | 2.14 | Unit Tests cho tất cả rules (BR-GEN + BR-SPEC) | `11-testing-plan.md` | 4h |
 
 ### Tiêu chí nghiệm thu:
-- [ ] Đăng ký → Đăng nhập → Lấy số dư: Hoạt động end-to-end qua Postman.
-- [ ] Chuyển tiền P2P: Idempotency + MultiLock hoạt động đúng.
-- [ ] VietQR sinh ra chuỗi TLV đúng chuẩn EMVCo (kiểm tra CRC16).
-- [ ] Nhập sai PIN 5 lần → Tài khoản bị khóa trong Redis.
-- [ ] Tất cả Unit Tests pass.
+- [x] Đăng ký → Đăng nhập → Lấy số dư: Hoạt động end-to-end qua Postman.
+- [x] Chuyển tiền P2P: Idempotency + MultiLock hoạt động đúng.
+- [x] VietQR sinh ra chuỗi TLV đúng chuẩn EMVCo (kiểm tra CRC16).
+- [x] Nhập sai PIN 5 lần → Tài khoản bị khóa trong Redis.
+- [x] Tất cả Unit Tests pass.
 
 ---
 
