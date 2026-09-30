@@ -32,6 +32,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final com.walletapp.common.filter.IdempotencyFilter idempotencyFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -58,7 +59,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthenticationEntryPoint())
                         .accessDeniedHandler(customAccessDeniedHandler())
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(idempotencyFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
