@@ -26,23 +26,24 @@ Thiết lập toàn bộ hạ tầng cơ sở: Repository, Cloud DB, Cloud Redis
 
 | # | Nhiệm vụ | File Plan tham chiếu | Thời gian |
 | :--- | :--- | :--- | :--- |
-| 1.1 | Tạo 3 repo GitHub (API, Admin, Android) | `01-repo-strategy.md` | 1h |
-| 1.2 | Cấu hình `.gitignore`, branching rules, PR template | `01-repo-strategy.md` | 1h |
+| 1.1 | Tạo Monorepo GitHub (`mini-digital-wallet-hub`) | `01-repo-strategy.md` | 1h |
+| 1.2 | Cấu hình Monorepo `.gitignore`, README, Git Flow | `01-repo-strategy.md` | 1h |
 | 1.3 | Đăng ký Neon.tech, tạo PostgreSQL database | `03-database-cloud.md` | 30 min |
 | 1.4 | Đăng ký Upstash, tạo Redis instance | `03-database-cloud.md` | 30 min |
-| 1.5 | Khởi tạo project Spring Boot (Spring Initializr) | `06-backend-plan.md` | 1h |
+| 1.5 | Khởi tạo project Spring Boot (Java 22, Maven) | `06-backend-plan.md` | 1h |
 | 1.6 | Cấu hình `application.yml` kết nối Cloud DB + Redis | `06-backend-plan.md` | 1h |
 | 1.7 | Viết Flyway migration `V1__create_core_tables.sql` | `03-database-cloud.md` | 2h |
 | 1.8 | Viết Flyway migration `V2__seed_system_configs.sql` | `03-database-cloud.md` | 30 min |
-| 1.9 | Chạy `mvn flyway:migrate` → Kiểm tra bảng trên Neon Dashboard | `03-database-cloud.md` | 30 min |
+| 1.9 | Chạy Flyway migrate → Đã tạo 7 bảng trên Neon | `03-database-cloud.md` | 30 min |
 | 1.10 | Viết JPA Entities cho tất cả bảng (User, Wallet, Transaction, LedgerEntry, QrCode, DeviceKey, SystemConfig) | `06-backend-plan.md` | 3h |
 
 ### Tiêu chí nghiệm thu (Definition of Done):
-- [ ] 3 repo GitHub đã tạo, có `.gitignore` và nhánh `develop`.
-- [ ] Cloud PostgreSQL (Neon) chạy, có 7 bảng với đầy đủ constraints.
-- [ ] Cloud Redis (Upstash) chạy, có thể ping thành công.
-- [ ] Spring Boot khởi động thành công, kết nối được cả DB và Redis.
-- [ ] `system_configs` có 10 record cấu hình mặc định.
+- [x] Monorepo GitHub đã tạo, có `.gitignore` và nhánh `develop`.
+- [x] Cloud PostgreSQL (Neon) chạy, có 7 bảng với đầy đủ constraints.
+- [x] Cloud Redis (Upstash) chạy, kết nối TLS thành công.
+- [x] Spring Boot khởi động thành công, kết nối được cả DB và Redis.
+- [x] `system_configs` có 10 record cấu hình mặc định.
+- [ ] JPA Entities được ánh xạ đầy đủ, validate schema thành công.
 
 ---
 
@@ -177,7 +178,7 @@ Deploy production, hoàn thiện tài liệu, viết báo cáo đồ án.
 | 6.2 | Deploy Backend lên Render | `12-deployment-plan.md` | 2h |
 | 6.3 | Deploy Frontend lên Vercel | `12-deployment-plan.md` | 1h |
 | 6.4 | Build APK Release (signed) | `12-deployment-plan.md` | 1h |
-| 6.5 | Cấu hình CI/CD GitHub Actions (3 repo) | `12-deployment-plan.md` | 3h |
+| 6.5 | Cấu hình CI/CD GitHub Actions (Monorepo pipeline với path filter) | `12-deployment-plan.md` | 3h |
 | 6.6 | Kiểm tra toàn bộ hệ thống trên production | — | 2h |
 | 6.7 | Xuất tài liệu Swagger/OpenAPI | `09-api-contract.md` | 1h |
 | 6.8 | Xuất báo cáo JMeter (biểu đồ, p95/p99 latency) | `11-testing-plan.md` | 2h |

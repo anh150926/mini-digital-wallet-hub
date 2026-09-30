@@ -37,8 +37,8 @@ plan/
 ├── 00-master-plan.md            ← [BẠN ĐANG ĐỌC FILE NÀY]
 │                                   Tổng quan, mục lục, quy ước
 │
-├── 01-repo-strategy.md          ← Quy trình tạo Repository & quản lý Git
-│                                   (Cấu trúc repo, branching, PR rules, .gitignore)
+├── 01-repo-strategy.md          ← Chiến lược Monorepo & Git Flow
+│                                   (Cấu trúc Monorepo, branching Git Flow, Conventional Commits)
 │
 ├── 02-architecture-plan.md      ← Kiến trúc hệ thống tổng thể
 │                                   (Sơ đồ tầng, giao tiếp giữa các module)

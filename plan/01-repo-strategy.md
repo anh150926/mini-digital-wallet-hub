@@ -1,295 +1,157 @@
-# 01 - QUY TRÌNH TẠO REPOSITORY & QUẢN LÝ GIT
+# 01 - QUY TRÌNH QUẢN LÝ REPOSITORY & GIT FLOW (MONOREPO)
 
 ---
 
-## I. CHIẾN LƯỢC REPOSITORY (REPO STRATEGY)
+## I. CHIẾN LƯỢC MONOREPO (UNIFIED REPOSITORY)
 
-### 1.1. Mô hình Multi-Repo (Tách biệt 3 repo)
-Dự án sử dụng mô hình **Multi-Repository** — mỗi tầng ứng dụng là một repo độc lập, phù hợp khi team nhỏ và mỗi thành phần có lifecycle deploy riêng.
+### 1.1. Lựa chọn mô hình Monorepo cho Dự án Cá nhân
+Dự án sử dụng mô hình **Single Monorepo** — gom toàn bộ hệ sinh thái ví điện tử (Tài liệu kiến trúc, Backend Spring Boot, Web Admin Next.js, và Mobile App Android) vào **1 Repository duy nhất** mang tên `mini-digital-wallet-hub`.
 
-| Repo | Tên Gợi Ý | Ngôn Ngữ | Mô Tả |
-| :--- | :--- | :--- | :--- |
-| **Backend** | `digital-wallet-api` | Java 21 / Spring Boot 3 | REST API, nghiệp vụ ví, Distributed Lock |
-| **Web Admin** | `digital-wallet-admin` | TypeScript / Next.js 14 | Portal quản trị cho Admin/SuperAdmin/Owner |
-| **Mobile** | `digital-wallet-android` | Java 17 / Android | Ứng dụng ví cho người dùng cuối (USER) |
+| Lợi ích kỹ thuật | Chi tiết |
+| :--- | :--- |
+| **Portfolio CV hoàn hảo** | Nhà tuyển dụng chỉ cần 1 link GitHub là thấy toàn bộ kiến trúc Full-stack từ A-Z. |
+| **Tiện lợi khi code 1 mình** | Cùng một tính năng (vd: Chuyển tiền P2P), có thể commit đồng bộ cả API backend và UI mobile trong cùng 1 lần git commit. |
+| **Độc lập triển khai (Deploy)** | Vercel và Render/Railway đều hỗ trợ thiết lập `Root Directory` độc lập từ 1 repo chung. |
+| **Quản lý tài liệu tập trung** | Thư mục `plan/` nằm chung với mã nguồn, đảm bảo tài liệu luôn đồng hành cùng code. |
 
-### 1.2. Cấu trúc thư mục gợi ý từng Repo
+---
 
-#### A. `digital-wallet-api` (Backend)
-```
-digital-wallet-api/
-├── src/
-│   ├── main/
-│   │   ├── java/com/walletapp/
-│   │   │   ├── config/          # Cấu hình Spring, Redis, Security
-│   │   │   ├── auth/            # Module AUTH-01, AUTH-02, AUTH-03
-│   │   │   ├── wallet/          # Module WAL-01, WAL-02
-│   │   │   ├── transaction/     # Module TX-01, TX-02, TX-03
-│   │   │   ├── qrcode/          # Module QR-01
-│   │   │   ├── admin/           # Module ADM-01 đến ADM-04
-│   │   │   ├── security/        # Module SEC-01, SEC-02, SEC-03
-│   │   │   └── common/          # Exception handler, DTO base, Utils
-│   │   └── resources/
-│   │       ├── application.yml
-│   │       ├── application-dev.yml
-│   │       ├── application-prod.yml
-│   │       └── db/migration/    # Flyway SQL files
-│   └── test/
-│       └── java/com/walletapp/
-│           ├── unit/            # Unit Tests
-│           └── integration/     # Integration Tests
-├── jmeter/
-│   └── load-test-plan.jmx      # Kịch bản JMeter 500 threads
-├── .env.example
-├── .gitignore
-├── pom.xml
-└── README.md
-```
+### 1.2. Cấu trúc thư mục Monorepo toàn diện
 
-#### B. `digital-wallet-admin` (Frontend Next.js)
-```
-digital-wallet-admin/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx             # Landing / Login
-│   │   ├── dashboard/           # ADM-01: Tổng quan
-│   │   ├── users/               # ADM-02: Quản lý người dùng
-│   │   │   └── [id]/
-│   │   ├── transactions/        # ADM-03: Đối soát giao dịch
-│   │   └── settings/            # ADM-04: Cấu hình hạn mức
-│   ├── components/
-│   ├── lib/                     # API client, auth helpers
-│   └── styles/                  # Vanilla CSS modules
-├── public/
-├── .env.local.example
-├── .gitignore
-├── package.json
-└── README.md
-```
-
-#### C. `digital-wallet-android` (Mobile)
-```
-digital-wallet-android/
-├── app/
-│   ├── src/main/
-│   │   ├── java/com/walletapp/android/
-│   │   │   ├── data/            # Repository, Retrofit API, Local DB
-│   │   │   ├── domain/          # Use Cases, Models
-│   │   │   ├── ui/
-│   │   │   │   ├── auth/        # Login, Register screens
-│   │   │   │   ├── home/        # Dashboard, Balance
-│   │   │   │   ├── transfer/    # P2P Transfer
-│   │   │   │   ├── qrscanner/   # CameraX + ML Kit
-│   │   │   │   ├── qrgenerate/ # Tạo mã QR
-│   │   │   │   └── history/     # Lịch sử giao dịch
-│   │   │   ├── security/        # Keystore, Biometric helpers
-│   │   │   └── util/            # VietQR TLV parser, Network utils
-│   │   ├── res/
-│   │   └── AndroidManifest.xml
-│   └── build.gradle.kts
-├── .gitignore
-└── README.md
+```text
+mini-digital-wallet-hub/                         ← REPO GỐC (GitHub: anh150926/mini-digital-wallet-hub)
+│
+├── .gitignore                                   ← Bộ lọc rác tổng (Java, Node, Android, bảo vệ .env)
+├── README.md                                    ← Bìa giới thiệu hệ sinh thái chuẩn Portfolio quốc tế
+│
+├── plan/                                        ← 15 TÀI LIỆU KẾ HOẠCH & QUY TẮC NGHIỆP VỤ
+│   ├── 00-master-plan.md                        # Tổng quan, mục lục, bảng mã, RACI
+│   ├── 01-repo-strategy.md                      # Chiến lược Monorepo & Git Flow
+│   ├── 02-architecture-plan.md                  # Sơ đồ kiến trúc 2 tầng khóa (Redis + Pessimistic Lock)
+│   ├── 03-database-cloud.md                     # Thiết kế PostgreSQL Cloud (Neon) & Redis (Upstash)
+│   ├── 04-business-rules.md                     # Quy tắc nghiệp vụ chung & riêng từng module
+│   ├── 05-business-flows.md                     # 9 luồng nghiệp vụ End-to-End & State Machine
+│   ├── 06-backend-plan.md                       # Bản thiết kế chi tiết Spring Boot API
+│   ├── 07-frontend-plan.md                      # Bản thiết kế chi tiết Next.js Admin Portal
+│   ├── 08-android-plan.md                       # Bản thiết kế chi tiết Mobile Android Java
+│   ├── 09-api-contract.md                       # Hợp đồng API OpenAPI 3.0 & mã lỗi Error Codes
+│   ├── 10-security-plan.md                      # Mô hình bảo mật 6 lớp Defense in Depth
+│   ├── 11-testing-plan.md                       # Kế hoạch kiểm thử & Kịch bản JMeter 500 threads
+│   ├── 12-deployment-plan.md                    # Quy trình deploy Cloud & CI/CD Pipeline
+│   ├── 13-session-lifecycle.md                  # Quản lý phiên, Refresh Token & Device Binding
+│   └── 14-roadmap.md                            # Lộ trình triển khai 6 giai đoạn
+│
+├── digital-wallet-api/                          ← BACKEND (Java 22, Spring Boot 3.3.x)
+│   ├── src/main/java/com/walletapp/
+│   │   ├── config/                              # SecurityConfig, RedisConfig, OpenApiConfig
+│   │   ├── common/                              # DTO wrapper, GlobalExceptionHandler, CryptoUtils
+│   │   ├── auth/                                # Module AUTH (Register, Login, Token)
+│   │   ├── wallet/                              # Module WAL (Balance, History, Freeze)
+│   │   ├── transaction/                         # Module TX (TransferOrchestrator, TransferExecutor)
+│   │   ├── qrcode/                              # Module QR (VietQR EMVCo Generator, QR Payment)
+│   │   ├── security/                            # Module SEC (DeviceKey, PinService, ECDSA Verify)
+│   │   └── admin/                               # Module ADM (Dashboard, Users, Reconcile, Configs)
+│   ├── src/main/resources/
+│   │   ├── application.yml                      # Cấu hình gốc
+│   │   ├── application-dev.yml                  # Kết nối Neon DB & Upstash Redis Cloud
+│   │   └── db/migration/                        # Flyway SQL (V1__create_core_tables, V2__seed_configs)
+│   ├── .env                                     # Thông tin mật khẩu DB/Redis (được .gitignore bảo vệ)
+│   └── pom.xml                                  # Quản lý thư viện Maven
+│
+├── digital-wallet-admin/                        ← FRONTEND WEB (Next.js 16, TypeScript, Vanilla CSS)
+│   ├── src/app/
+│   │   ├── dashboard/                           # ADM-01: Bảng điều khiển giám sát dòng tiền
+│   │   ├── users/                               # ADM-02: Quản lý ví & khóa tài khoản
+│   │   ├── transactions/                        # ADM-03: Đối soát bút toán Debit vs Credit
+│   │   ├── settings/                            # ADM-04: Cấu hình hạn mức & biểu phí
+│   │   └── layout.tsx, page.tsx
+│   ├── src/components/                          # Reusable UI components
+│   ├── src/lib/                                 # API client layer, Auth helpers
+│   ├── src/styles/                              # CSS Modules
+│   └── package.json
+│
+└── digital-wallet-android/                      ← MOBILE CLIENT (Java 17, Android SDK API 26-35)
+    ├── app/src/main/java/com/walletapp/android/
+    │   ├── data/                                # Retrofit API, Local EncryptedStorage
+    │   ├── ui/                                  # Auth, Home, Transfer, QrScanner, History
+    │   ├── security/                            # Android Keystore, BiometricPrompt, ECDSA Key
+    │   └── util/                                # VietQR TLV Parser, NetworkUtils
+    ├── app/src/main/res/                        # Layout XML, Drawables, Values
+    ├── build.gradle.kts                         # Cấu hình Gradle
+    └── AndroidManifest.xml                      # Quyền Camera, Biometric, Internet
 ```
 
 ---
 
-## II. QUY TRÌNH TẠO REPOSITORY
+## II. CHIẾN LƯỢC PHÂN NHÁNH GIT FLOW (BRANCHING STRATEGY)
 
-### Bước 1: Tạo Repo trên GitHub/GitLab
-```bash
-# 1. Tạo 3 repo trên GitHub (Public hoặc Private)
-#    - digital-wallet-api
-#    - digital-wallet-admin
-#    - digital-wallet-android
+Dự án áp dụng mô hình **Git Flow chuẩn hóa** trên toàn bộ Monorepo:
 
-# 2. Clone về máy local
-git clone https://github.com/<username>/digital-wallet-api.git
-git clone https://github.com/<username>/digital-wallet-admin.git
-git clone https://github.com/<username>/digital-wallet-android.git
-```
-
-### Bước 2: Thiết lập `.gitignore` chuẩn cho từng repo
-
-#### Backend `.gitignore`:
-```gitignore
-# Build
-target/
-*.class
-*.jar
-
-# IDE
-.idea/
-*.iml
-.vscode/
-
-# Environment
-.env
-application-local.yml
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-logs/
-```
-
-#### Frontend `.gitignore`:
-```gitignore
-node_modules/
-.next/
-out/
-.env.local
-.env*.local
-*.tsbuildinfo
-```
-
-#### Android `.gitignore`:
-```gitignore
-*.iml
-.gradle/
-/local.properties
-/.idea/
-/build/
-/app/build/
-/captures/
-.externalNativeBuild/
-.cxx/
-*.apk
-*.aab
-```
-
-### Bước 3: Tạo nhánh `develop` & Thiết lập Branch Protection
-```bash
-# Trong mỗi repo
-git checkout -b develop
-git push -u origin develop
-
-# Trên GitHub → Settings → Branches → Add rule:
-#   Branch name pattern: main
-#   ✅ Require pull request reviews before merging (1 reviewer)
-#   ✅ Require status checks to pass before merging
-#   ✅ Do not allow force pushes
-```
-
----
-
-## III. CHIẾN LƯỢC PHÂN NHÁNH (BRANCHING STRATEGY)
-
-### Mô hình Git Flow đơn giản hóa:
-
-```
-main ──────────────────────────────────────── (Production-ready)
+```text
+main ─────────────────────────────────────────────────────────── (Production-ready)
   │
-  └── develop ─────────────────────────────── (Tích hợp liên tục)
+  └── develop ────────────────────────────────────────────────── (Tích hợp liên tục hệ sinh thái)
         │
-        ├── feat/AUTH-01-register ──────────── (Chức năng mới)
-        ├── feat/TX-01-p2p-transfer
-        ├── feat/QR-01-vietqr-generator
+        ├── feat/core-01-jpa-entities ────────── (Làm JPA Entities cho 7 bảng)
+        ├── feat/api-auth-register ───────────── (Làm API Đăng ký)
+        ├── feat/api-tx-transfer ─────────────── (Làm Engine Chuyển tiền + MultiLock)
+        ├── feat/admin-dashboard ─────────────── (Làm Dashboard Web Next.js)
+        ├── feat/android-qr-scanner ──────────── (Làm CameraX quét VietQR)
         │
-        ├── fix/WAL-01-balance-race ────────── (Sửa lỗi)
+        ├── fix/api-wallet-balance-race ──────── (Sửa lỗi concurrency)
         │
-        ├── hotfix/SEC-03-pin-bypass ───────── (Vá lỗi khẩn cấp)
-        │
-        └── release/v1.0.0 ────────────────── (Chuẩn bị phát hành)
+        └── release/v1.0.0 ───────────────────── (Chuẩn bị phát hành phiên bản)
 ```
 
-### Quy ước đặt tên nhánh:
+### 2.1. Quy ước đặt tên nhánh trong Monorepo:
 
-| Loại | Format | Ví dụ |
+| Loại nhánh | Format chuẩn | Ví dụ thực tế |
 | :--- | :--- | :--- |
-| Chức năng mới | `feat/<MÃ>-<mô-tả>` | `feat/TX-01-p2p-transfer` |
-| Sửa lỗi | `fix/<MÃ>-<mô-tả>` | `fix/WAL-01-balance-negative` |
-| Vá khẩn cấp | `hotfix/<MÃ>-<mô-tả>` | `hotfix/SEC-03-pin-bruteforce` |
-| Phát hành | `release/v<major>.<minor>.<patch>` | `release/v1.0.0` |
-| Cải thiện code | `refactor/<mô-tả>` | `refactor/extract-lock-service` |
+| **Tính năng Backend** | `feat/api-<mã-chức-năng>` | `feat/api-auth-register`, `feat/api-tx-p2p` |
+| **Tính năng Frontend** | `feat/admin-<tên-trang>` | `feat/admin-dashboard`, `feat/admin-users` |
+| **Tính năng Mobile** | `feat/android-<tên-chức-năng>` | `feat/android-qr-scan`, `feat/android-biometric` |
+| **Tính năng chung** | `feat/core-<tên-thành-phần>` | `feat/core-jpa-entities`, `feat/core-db-schema` |
+| **Sửa lỗi** | `fix/<phạm-vi>-<mô-tả>` | `fix/api-balance-race`, `fix/android-camera-crash` |
+| **Vá lỗi khẩn cấp** | `hotfix/<mô-tả>` | `hotfix/pin-bruteforce-bypass` |
+| **Phát hành** | `release/v<major>.<minor>.<patch>` | `release/v1.0.0` |
 
 ---
 
-## IV. QUY TẮC COMMIT MESSAGE
+## III. QUY TẮC COMMIT MESSAGE (CONVENTIONAL COMMITS)
 
-### Format chuẩn (Conventional Commits):
-```
-<type>(<scope>): <mô tả ngắn gọn>
+Mỗi commit phải chỉ rõ **Scope (phạm vi ảnh hưởng)** trong Monorepo:
 
-[Nội dung bổ sung nếu cần]
-
-[Footer: issue reference]
+### Cú pháp:
+```text
+<type>(<scope>): <mô tả ngắn gọn bằng tiếng Anh hoặc tiếng Việt>
 ```
 
-### Bảng `type` cho phép:
+### Bảng Scope quy định trong Monorepo:
+* **`api`**: Thay đổi trong thư mục `digital-wallet-api/`
+* **`admin`**: Thay đổi trong thư mục `digital-wallet-admin/`
+* **`android`**: Thay đổi trong thư mục `digital-wallet-android/`
+* **`docs`**: Thay đổi trong thư mục `plan/` hoặc file `README.md`
+* **`root`**: Thay đổi ở root (`.gitignore`, `.github/`, config chung)
 
-| Type | Mô Tả | Ví dụ |
-| :--- | :--- | :--- |
-| `feat` | Chức năng mới | `feat(TX-01): implement P2P transfer with MultiLock` |
-| `fix` | Sửa lỗi | `fix(WAL-01): prevent negative balance on concurrent withdraw` |
-| `refactor` | Tái cấu trúc (không thêm/sửa logic) | `refactor(security): extract ECDSA signer to util class` |
-| `test` | Thêm/sửa test | `test(TX-01): add 500-thread JMeter load test` |
-| `docs` | Tài liệu | `docs(api): update Swagger spec for /transfers` |
-| `chore` | Config, CI/CD, tool | `chore(ci): add GitHub Actions build workflow` |
-| `perf` | Tối ưu hiệu năng | `perf(db): add composite index on transactions table` |
+### Ví dụ Commit chuẩn:
+* `feat(api): implement TransferOrchestrator with Redisson MultiLock`
+* `feat(android): add CameraX QR scanner with ML Kit parser`
+* `feat(admin): build reconciliation report table with Debit/Credit balance`
+* `fix(api): prevent deadlock by sorting wallet IDs ascending before lock`
+* `docs(plan): update roadmap DoD for phase 1 completion`
+* `chore(root): configure unified monorepo gitignore`
 
 ---
 
-## V. QUY TRÌNH PULL REQUEST (PR)
+## IV. QUẢN LÝ BẢO MẬT BIẾN MÔI TRƯỜNG TRONG MONOREPO
 
-### Template PR:
-```markdown
-## Mô tả
-<!-- Mô tả ngắn gọn thay đổi -->
-
-## Mã chức năng liên quan
-<!-- VD: TX-01, QR-02 -->
-
-## Loại thay đổi
-- [ ] Chức năng mới (feat)
-- [ ] Sửa lỗi (fix)
-- [ ] Refactor
-- [ ] Cấu hình / CI/CD
-
-## Checklist
-- [ ] Code biên dịch thành công (không có error/warning)
-- [ ] Đã viết Unit Test cho logic mới
-- [ ] Đã kiểm tra tuân thủ Business Rules (BR-GEN / BR-SPEC)
-- [ ] Đã cập nhật API contract (nếu thay đổi endpoint)
-- [ ] Đã test trên Emulator / Trình duyệt (nếu là FE/Mobile)
-
-## Screenshots (nếu có giao diện)
-```
-
-### Quy trình Review:
-1. Developer tạo PR từ nhánh `feat/*` hoặc `fix/*` vào `develop`.
-2. Tự kiểm tra Checklist trước khi gán Reviewer.
-3. Reviewer kiểm tra code, chạy thử (nếu cần), và Approve hoặc Request Changes.
-4. Merge vào `develop` bằng **Squash and Merge** (gộp commit cho gọn lịch sử).
-5. Khi `develop` ổn định, tạo nhánh `release/vX.Y.Z`, test cuối cùng, rồi merge vào `main`.
-
----
-
-## VI. QUẢN LÝ BIẾN MÔI TRƯỜNG
-
-### Nguyên tắc:
-- **KHÔNG BAO GIỜ** commit file `.env`, `application-local.yml` hoặc bất kỳ file nào chứa credential thật vào Git.
-- Luôn có file `.env.example` hoặc `application.yml.example` chứa key mẫu (không có giá trị thật) để hướng dẫn developer mới.
-
-### File `.env.example` mẫu cho Backend:
-```env
-# Database (Cloud PostgreSQL)
-DATABASE_URL=jdbc:postgresql://<host>:<port>/<dbname>?sslmode=require
-DATABASE_USERNAME=<username>
-DATABASE_PASSWORD=<password>
-
-# Redis (Cloud)
-REDIS_URL=redis://default:<password>@<host>:<port>
-
-# JWT
-JWT_SECRET=<your-256-bit-secret>
-JWT_ACCESS_EXPIRY=900000
-JWT_REFRESH_EXPIRY=604800000
-
-# App
-APP_PORT=8080
-APP_ENV=development
-```
+1. **File `.gitignore` gốc**:
+   * Chặn tuyệt đối mọi file `.env`, `digital-wallet-api/.env`, `digital-wallet-android/local.properties`.
+   * Chặn toàn bộ rác build (`target/`, `node_modules/`, `.next/`, `build/`, `.gradle/`).
+2. **File `.env.example`**:
+   * Luôn duy trì file mẫu không chứa mật khẩu thật để lưu cấu trúc các biến cần thiết:
+     * `DATABASE_URL=jdbc:postgresql://<host>:<port>/<dbname>?sslmode=require`
+     * `REDIS_URL=rediss://default:<password>@<host>:<port>`
+     * `JWT_SECRET=<your-256-bit-secret>`
+3. **Môi trường Cloud (Production)**:
+   * Mật khẩu thật được nhập trực tiếp vào mục **Environment Variables** trên Dashboard của Render/Vercel, hoàn toàn không đẩy lên Git.

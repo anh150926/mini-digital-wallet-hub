@@ -1,93 +1,76 @@
-# 12 - QUY TRÌNH DEPLOY & CI/CD PIPELINE
+# 12 - QUY TRÌNH DEPLOY & CI/CD PIPELINE (MONOREPO)
 
 ---
 
 ## I. TỔNG QUAN DEPLOYMENT ARCHITECTURE
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                      DEVELOPER MACHINE                        │
-│                                                                │
-│  ┌─────────────┐  ┌──────────────────┐  ┌─────────────────┐  │
-│  │ Backend     │  │ Frontend Admin   │  │ Android Studio  │  │
-│  │ (IntelliJ)  │  │ (VS Code)        │  │                 │  │
-│  │ localhost:  │  │ localhost:3000    │  │ Emulator/USB    │  │
-│  │ 8080        │  │                  │  │                 │  │
-│  └──────┬──────┘  └────────┬─────────┘  └────────┬────────┘  │
-│         │                  │                     │            │
-└─────────┼──────────────────┼─────────────────────┼────────────┘
-          │                  │                     │
-     git push           git push              Manual Build
-          │                  │                     │
-          ▼                  ▼                     ▼
-┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│ GitHub Repo  │  │ GitHub Repo      │  │ GitHub Repo      │
-│ wallet-api   │  │ wallet-admin     │  │ wallet-android   │
-└──────┬───────┘  └────────┬─────────┘  └────────┬─────────┘
-       │                   │                     │
-       │ GitHub Actions    │ GitHub Actions       │ GitHub Actions
-       │ (Auto CI)         │ (Auto CI)            │ (Auto CI)
-       ▼                   ▼                     ▼
-┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│  Test &      │  │  Build &         │  │  Build APK       │
-│  Build JAR   │  │  Export Static   │  │  (Debug/Release) │
-└──────┬───────┘  └────────┬─────────┘  └────────┬─────────┘
-       │                   │                     │
-       ▼                   ▼                     ▼
-┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│  Railway /   │  │  Vercel          │  │  GitHub Releases │
-│  Render /    │  │  (Tự động)       │  │  hoặc Firebase   │
-│  Fly.io      │  │                  │  │  App Distribution│
-└──────────────┘  └──────────────────┘  └──────────────────┘
-       │                   │
-       ▼                   ▼
-┌──────────────────────────────────────┐
-│  Cloud Database & Cache               │
-│  ┌──────────────┐  ┌──────────────┐  │
-│  │ Neon.tech    │  │ Upstash      │  │
-│  │ PostgreSQL   │  │ Redis        │  │
-│  └──────────────┘  └──────────────┘  │
-└──────────────────────────────────────┘
+Trong mô hình **Monorepo**, toàn bộ hệ thống nằm trong 1 repo GitHub duy nhất (`mini-digital-wallet-hub`). Mỗi dịch vụ cloud sẽ kết nối vào repo này và cấu hình **Root Directory** riêng:
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│                        DEVELOPER LOCAL MACHINE                         │
+│                                                                        │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐  │
+│  │ Backend API      │  │ Frontend Admin   │  │ Mobile Client        │  │
+│  │ (Spring Boot)    │  │ (Next.js)        │  │ (Android Studio)     │  │
+│  │ localhost:8080   │  │ localhost:3000   │  │ Emulator (API 26-35) │  │
+│  └────────┬─────────┘  └────────┬─────────┘  └──────────┬───────────┘  │
+│           │                     │                       │              │
+└───────────┼─────────────────────┼───────────────────────┼──────────────┘
+            │                     │                       │
+            └─────────────────────┼───────────────────────┘
+                                  ▼
+                    git push (1 REPO DUY NHẤT)
+                                  │
+                                  ▼
+           ┌──────────────────────────────────────────────┐
+           │ GitHub Monorepo: mini-digital-wallet-hub     │
+           │ (Nhánh: main, develop, feat/*)               │
+           └──────────────────────┬───────────────────────┘
+                                  │
+        ┌─────────────────────────┼─────────────────────────┐
+        ▼ (Path: api/**)          ▼ (Path: admin/**)        ▼ (Path: android/**)
+┌───────────────┐         ┌───────────────┐         ┌────────────────┐
+│ GitHub Action │         │ GitHub Action │         │ GitHub Action  │
+│ Backend CI    │         │ Frontend CI   │         │ Android CI     │
+└───────┬───────┘         └───────┬───────┘         └────────┬───────┘
+        │                         │                          │
+        ▼                         ▼                          ▼
+┌───────────────┐         ┌───────────────┐         ┌────────────────┐
+│ Render Cloud  │         │ Vercel Cloud  │         │ GitHub Release │
+│ (Root Dir:    │         │ (Root Dir:    │         │ (Phân phối file│
+│  wallet-api)  │         │  wallet-admin)│         │  app-release   │
+│               │         │               │         │  .apk)         │
+└───────┬───────┘         └───────┬───────┘         └────────────────┘
+        │                         │
+        ▼                         ▼
+┌─────────────────────────────────────────────────────────┐
+│ Cloud Database & Cache Infrastructure                   │
+│ ┌──────────────────────────┐  ┌───────────────────────┐ │
+│ │ Neon.tech PostgreSQL 16  │  │ Upstash Redis 7 (TLS) │ │
+│ └──────────────────────────┘  └───────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## II. NỀN TẢNG DEPLOY KHUYẾN NGHỊ
+## II. NỀN TẢNG DEPLOY KHUYẾN NGHỊ (HOÀN TOÀN MIỄN PHÍ)
 
-### 2.1. So sánh nền tảng Deploy Backend (Spring Boot JAR)
-
-| Nền tảng | Free Tier | Docker? | Java Support | Ưu điểm | Nhược điểm |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Railway** | $5 credit/tháng | Có (auto) | Java 21 ✅ | Deploy cực nhanh, auto-detect Dockerfile | Credit có hạn |
-| **Render** | 750h/tháng | Có | Java 21 ✅ | Free tier rộng, auto-deploy từ Git | Cold start chậm (spin down sau 15 phút idle) |
-| **Fly.io** | 3 shared VMs | Có | Java 21 ✅ | Cấu hình linh hoạt, region châu Á | Cần viết Dockerfile |
-| **Koyeb** | 1 nano instance | Có | Java 21 ✅ | Không cold start | RAM ít (256MB free) |
-
-**Khuyến nghị:** **Render** (đơn giản nhất, free tier đủ dùng cho đồ án, không cần Docker Desktop — Render tự build từ Dockerfile trên cloud).
-
-### 2.2. Deploy Frontend Next.js
-
-| Nền tảng | Khuyến nghị | Lý do |
-| :--- | :--- | :--- |
-| **Vercel** | ⭐ **Tốt nhất** | Vercel là nhà phát triển Next.js — tối ưu hoàn hảo, deploy 1 click từ GitHub |
-| Netlify | Tốt | Hỗ trợ Next.js nhưng không tối ưu bằng Vercel |
-
-### 2.3. Phân phối APK Android
-
-| Phương pháp | Khi nào dùng | Cách làm |
-| :--- | :--- | :--- |
-| **Build APK local** | Debug & test nhanh | Android Studio → Build → Generate Signed APK |
-| **GitHub Releases** | Chia sẻ cho team/giáo viên | Upload `.apk` vào Release tag |
-| **Firebase App Distribution** | Test beta | Upload lên Firebase Console |
-| **Google Play (Internal Testing)** | Production | Tạo tài khoản Developer ($25) |
+| Thành phần | Nền tảng | Lý do lựa chọn | Chi phí |
+| :--- | :--- | :--- | :--- |
+| **Backend API** | **Render.com** | Hỗ trợ Dockerfile, tự build Maven, SSL miễn phí, tương thích Monorepo | $0 / tháng |
+| **Frontend Web** | **Vercel** | Tối ưu 100% cho Next.js, CDN toàn cầu, auto-detect root directory | $0 / tháng |
+| **Database** | **Neon.tech** | PostgreSQL 16 serverless, connection pooling, SSL bắt buộc | $0 / tháng |
+| **Cache & Lock** | **Upstash** | Serverless Redis có TLS, hỗ trợ Distributed Lock Redisson | $0 / tháng |
+| **Mobile App** | **GitHub Releases** | Lưu trữ và tải file APK trực tiếp từ trang GitHub repo | $0 / tháng |
 
 ---
 
-## III. QUY TRÌNH DEPLOY TỪNG THÀNH PHẦN
+## III. QUY TRÌNH DEPLOY CHI TIẾT TỪNG THÀNH PHẦN
 
-### 3.1. Deploy Backend lên Render
+### 3.1. Deploy Backend lên Render (từ Monorepo)
 
-#### Bước 1: Tạo `Dockerfile` (trong repo `digital-wallet-api`)
+#### Bước 1: Tạo `Dockerfile` trong thư mục `digital-wallet-api/`
 ```dockerfile
 # Stage 1: Build
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
@@ -106,222 +89,143 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-> **Lưu ý:** Bạn KHÔNG CẦN Docker Desktop trên máy local. Render sẽ tự detect file `Dockerfile` trong repo và build trên cloud server của họ.
-
 #### Bước 2: Cấu hình trên Render Dashboard
-1. Đăng ký [render.com](https://render.com) bằng GitHub.
-2. New → Web Service → Connect GitHub repo `digital-wallet-api`.
-3. Render tự detect `Dockerfile`.
-4. Thêm **Environment Variables:**
-   ```
-   DATABASE_URL=jdbc:postgresql://ep-xxx.neon.tech/neondb?sslmode=require
+1. Truy cập [render.com](https://render.com) $\rightarrow$ Đăng nhập bằng GitHub.
+2. Bấm **New +** $\rightarrow$ Chọn **Web Service**.
+3. Chọn repo GitHub: **`mini-digital-wallet-hub`**.
+4. Cấu hình quan trọng cho Monorepo:
+   * **Name**: `digital-wallet-api`
+   * **Region**: `Singapore`
+   * **Root Directory**: 👉 **`digital-wallet-api`** *(Bắt buộc điền mục này để Render chỉ build backend)*
+   * **Runtime**: `Docker`
+5. Nhập các **Environment Variables**:
+   ```env
+   DATABASE_URL=jdbc:postgresql://ep-falling-grass-b317h7w6-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
    DATABASE_USERNAME=neondb_owner
-   DATABASE_PASSWORD=<password>
-   REDIS_URL=rediss://default:<password>@xxx.upstash.io:6379
-   JWT_SECRET=<your-256-bit-secret>
+   DATABASE_PASSWORD=npg_rD2Tnzxoft6J
+   REDIS_HOST=live-yeti-319474.upstash.io
+   REDIS_PORT=6379
+   REDIS_PASSWORD=gQAAAAAABN_yAAIgcDE0MmU1MTExNTA5Yzk0MjExOWY3YWUxNTgyZjQ0YzUwYw
+   REDIS_SSL=true
+   JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
    APP_ENV=prod
    ```
-5. Bấm **Deploy** → Render tự build Docker image và chạy.
-6. Nhận URL public: `https://digital-wallet-api.onrender.com`.
-
-#### Bước 3: Cấu hình Auto-Deploy
-- Render mặc định auto-deploy khi có commit mới trên nhánh `main`.
-- Hoặc tắt auto-deploy và dùng manual deploy khi sẵn sàng.
+6. Bấm **Create Web Service** $\rightarrow$ Nhận URL công khai dạng: `https://digital-wallet-api.onrender.com`.
 
 ---
 
-### 3.2. Deploy Frontend lên Vercel
+### 3.2. Deploy Frontend lên Vercel (từ Monorepo)
 
-#### Bước 1: Kết nối Vercel với GitHub
-1. Đăng ký [vercel.com](https://vercel.com) bằng GitHub.
-2. Import repo `digital-wallet-admin`.
-3. Vercel tự detect Next.js → Auto-config build settings.
-
-#### Bước 2: Thêm Environment Variables
-```
-NEXT_PUBLIC_API_URL=https://digital-wallet-api.onrender.com/api/v1
-```
-
-#### Bước 3: Deploy
-- Bấm **Deploy** → Vercel build và deploy.
-- Nhận URL: `https://digital-wallet-admin.vercel.app`.
-- Mọi commit vào `main` sẽ auto-deploy.
-- Mọi PR sẽ tạo **Preview Deployment** (URL riêng để review).
+1. Truy cập [vercel.com](https://vercel.com) $\rightarrow$ Đăng nhập bằng GitHub.
+2. Bấm **Add New...** $\rightarrow$ **Project**.
+3. Chọn repo: **`mini-digital-wallet-hub`**.
+4. Cấu hình Monorepo:
+   * Ở dòng **Root Directory**: bấm nút **Edit** $\rightarrow$ chọn thư mục 👉 **`digital-wallet-admin`**.
+   * Framework Preset: Vercel sẽ tự động nhận diện `Next.js`.
+5. Thêm **Environment Variables**:
+   * Key: `NEXT_PUBLIC_API_URL`
+   * Value: `https://digital-wallet-api.onrender.com/api/v1`
+6. Bấm **Deploy** $\rightarrow$ Nhận URL trang quản trị: `https://digital-wallet-admin.vercel.app`.
 
 ---
 
-### 3.3. Build & Phân phối APK Android
+### 3.3. Đóng gói & Phát hành APK Android
 
-#### Build APK Debug (test nội bộ):
-```bash
-# Trong Android Studio Terminal
-./gradlew assembleDebug
+```powershell
+# 1. Di chuyển vào thư mục Android
+cd "D:\Mini Digital Wallet & QR Payment Hub\digital-wallet-android"
 
-# APK output: app/build/outputs/apk/debug/app-debug.apk
+# 2. Build file APK Release
+./gradlew assembleRelease
+
+# 3. File APK tạo ra tại:
+# app/build/outputs/apk/release/app-release.apk
+
+# 4. Đưa lên GitHub Releases để người dùng tải về:
+git tag v1.0.0
+git push origin v1.0.0
+# Vào GitHub -> Releases -> Draft a new release -> Kéo thả file .apk vào đính kèm
 ```
-
-#### Build APK Release (chia sẻ/nộp đồ án):
-1. Android Studio → Build → Generate Signed Bundle/APK.
-2. Chọn APK → Tạo hoặc chọn Keystore file (`.jks`).
-3. Build variant: `release`.
-4. APK output: `app/build/outputs/apk/release/app-release.apk`.
-
-#### Upload lên GitHub Releases:
-1. Tạo Tag: `git tag v1.0.0 && git push --tags`.
-2. GitHub → Releases → Create Release → Attach `app-release.apk`.
 
 ---
 
-## IV. CI/CD PIPELINE (GITHUB ACTIONS)
+## IV. CI/CD PIPELINE CHO MONOREPO (GITHUB ACTIONS)
+
+Điểm mạnh của Monorepo là ta có thể dùng tính năng **Path Filtering** để chỉ kích hoạt luồng build cho thư mục có sự thay đổi code:
 
 ### 4.1. Backend CI (`.github/workflows/backend-ci.yml`)
 
 ```yaml
-name: Backend CI
+name: Backend CI (Spring Boot)
 
 on:
   push:
+    paths:
+      - 'digital-wallet-api/**'
+      - '.github/workflows/backend-ci.yml'
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
-
-jobs:
-  test-and-build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-
-      - name: Run Unit Tests
-        run: mvn test -B
-
-      - name: Build JAR (skip tests)
-        run: mvn package -DskipTests -B
-
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: target/*.jar
-```
-
-### 4.2. Frontend CI (`.github/workflows/frontend-ci.yml`)
-
-```yaml
-name: Frontend CI
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-
-jobs:
-  lint-and-build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Build Next.js
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: https://digital-wallet-api.onrender.com/api/v1
-```
-
-### 4.3. Android CI (`.github/workflows/android-ci.yml`)
-
-```yaml
-name: Android CI
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
+    paths:
+      - 'digital-wallet-api/**'
     branches: [main, develop]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./digital-wallet-api
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
-
-      - name: Cache Gradle
+      - name: Cache Maven
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('digital-wallet-api/pom.xml') }}
+      - name: Run Tests & Build JAR
+        run: mvn clean package -B
+```
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
+### 4.2. Frontend CI (`.github/workflows/frontend-ci.yml`)
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+```yaml
+name: Frontend CI (Next.js)
+
+on:
+  push:
+    paths:
+      - 'digital-wallet-admin/**'
+      - '.github/workflows/frontend-ci.yml'
+    branches: [main, develop]
+  pull_request:
+    paths:
+      - 'digital-wallet-admin/**'
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./digital-wallet-admin
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'digital-wallet-admin/package-lock.json'
+      - name: Install & Lint & Build
+        run: |
+          npm ci
+          npm run lint
+          npm run build
 ```
-
----
-
-## V. QUY TRÌNH RELEASE (RELEASE FLOW)
-
-```
-1. Phát triển trên nhánh feat/* → Merge vào develop (qua PR)
-2. Khi develop ổn định → Tạo nhánh release/v1.0.0
-3. Test cuối cùng trên nhánh release
-4. Merge release/v1.0.0 → main (qua PR)
-5. Tạo Git Tag: v1.0.0
-6. Render auto-deploy Backend từ main
-7. Vercel auto-deploy Frontend từ main
-8. Build APK Release → Upload GitHub Releases
-9. Cập nhật CHANGELOG.md
-```
-
----
-
-## VI. CHECKLIST TRƯỚC KHI DEPLOY PRODUCTION
-
-- [ ] Tất cả Unit Tests pass trên CI.
-- [ ] Integration Tests pass.
-- [ ] Environment Variables đã được set đúng trên Render/Vercel.
-- [ ] Database Migration (Flyway) chạy thành công trên Cloud DB.
-- [ ] CORS config chỉ cho phép domain production.
-- [ ] `spring.jpa.show-sql=false` trong profile `prod`.
-- [ ] File `.env` KHÔNG có trong Git repository.
-- [ ] APK đã được ký bằng Release Keystore.
-- [ ] API Swagger spec đã cập nhật (version mới).
-- [ ] Tested trên Android thiết bị thật (không chỉ Emulator).
