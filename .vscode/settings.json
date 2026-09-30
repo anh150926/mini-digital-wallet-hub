@@ -1,0 +1,12 @@
+{
+  // Mở trực tiếp file .md ở dạng trang xem đẹp (Preview), KHÔNG mở tab code nữa
+  "workbench.editorAssociations": {
+    "*.md": "vscode.markdown.preview.editor"
+  },
+
+  // Tắt tính năng tự mở thêm 1 tab phụ bên cạnh
+  "markdown-preview-enhanced.automaticallyShowPreviewOfMarkdownBeingEdited": false,
+
+  // Nhấp vào liên kết giữa các file plan trong preview sẽ mở thẳng trang preview của file đó
+  "markdown.preview.openMarkdownLinks": "inPreview"
+}

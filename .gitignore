@@ -1,0 +1,78 @@
+# ==============================================================================
+# UNIFIED MONOREPO .GITIGNORE - MINI DIGITAL WALLET & QR PAYMENT HUB
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment & Sensitive Credentials (BẢO VỆ MẬT KHẨU - TUYỆT ĐỐI KHÔNG PUSH)
+# ------------------------------------------------------------------------------
+.env
+.env*.local
+*.local
+digital-wallet-api/.env
+digital-wallet-android/local.properties
+
+# ------------------------------------------------------------------------------
+# 2. Backend - Java & Spring Boot (Maven)
+# ------------------------------------------------------------------------------
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+**/*.nar
+**/*.ear
+**/*.zip
+**/*.tar.gz
+**/*.rar
+**/hs_err_pid*
+**/replay_pid*
+.mvn/wrapper/maven-wrapper.jar
+
+# ------------------------------------------------------------------------------
+# 3. Frontend - Web Admin Next.js (Node / npm)
+# ------------------------------------------------------------------------------
+**/node_modules/
+**/.next/
+**/out/
+**/build/
+**/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+**/*.tsbuildinfo
+next-env.d.ts
+
+# ------------------------------------------------------------------------------
+# 4. Mobile - Android Studio (Gradle / NDK)
+# ------------------------------------------------------------------------------
+**/.gradle/
+**/build/
+**/app/build/
+**/captures/
+**/.externalNativeBuild/
+**/.cxx/
+**/*.apk
+**/*.aab
+**/output-metadata.json
+
+# ------------------------------------------------------------------------------
+# 5. IDE & Editors (VS Code, IntelliJ, Android Studio)
+# ------------------------------------------------------------------------------
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.bak
+*~
+
+# ------------------------------------------------------------------------------
+# 6. Operating System Files
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini

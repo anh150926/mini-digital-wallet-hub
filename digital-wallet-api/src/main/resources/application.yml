@@ -1,0 +1,11 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  application:
+    name: digital-wallet-api
+  profiles:
+    active: ${APP_ENV:dev}
+  threads:
+    virtual:
+      enabled: true
