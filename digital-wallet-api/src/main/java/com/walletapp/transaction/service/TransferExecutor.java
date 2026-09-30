@@ -33,6 +33,111 @@ public class TransferExecutor {
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final com.walletapp.qrcode.repository.QrCodeRepository qrCodeRepository;
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public com.walletapp.qrcode.dto.QrPaymentResponse executeQrPaymentInTransaction(
+            UUID sourceWalletId,
+            UUID destWalletId,
+            UUID firstLockId,
+            UUID secondLockId,
+            BigDecimal amount,
+            BigDecimal fee,
+            String description,
+            String idempotencyKey,
+            UUID qrCodeId,
+            String recipientName
+    ) {
+        log.info("Executing QR payment in DB transaction: source={}, dest={}, amount={}, qrId={}",
+                sourceWalletId, destWalletId, amount, qrCodeId);
+
+        // 1. Acquire DB Pessimistic Locks in sorted UUID order (BR-GEN-03)
+        Wallet firstWallet = walletRepository.findByIdWithPessimisticLock(firstLockId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.WALLET_NOT_FOUND));
+        Wallet secondWallet = walletRepository.findByIdWithPessimisticLock(secondLockId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.WALLET_NOT_FOUND));
+
+        Wallet sourceWallet = sourceWalletId.equals(firstWallet.getId()) ? firstWallet : secondWallet;
+        Wallet destWallet = destWalletId.equals(firstWallet.getId()) ? firstWallet : secondWallet;
+
+        // 2. Check balance (BR-GEN-01)
+        BigDecimal totalDebit = amount.add(fee);
+        if (sourceWallet.getBalance().compareTo(totalDebit) < 0) {
+            throw new BusinessException(
+                    ErrorCode.INSUFFICIENT_FUNDS,
+                    "Số dư ví không đủ để thực hiện thanh toán QR",
+                    Map.of("current_balance", sourceWallet.getBalance())
+            );
+        }
+
+        // 3. Deduct from source, add to dest
+        sourceWallet.setBalance(sourceWallet.getBalance().subtract(totalDebit));
+        destWallet.setBalance(destWallet.getBalance().add(amount));
+
+        walletRepository.save(sourceWallet);
+        walletRepository.save(destWallet);
+
+        // 4. Create Transaction
+        final Transaction savedTx = transactionRepository.save(Transaction.builder()
+                .sourceWalletId(sourceWallet.getId())
+                .destWalletId(destWallet.getId())
+                .type(TransactionType.QR_PAYMENT)
+                .status(TransactionStatus.SUCCESS)
+                .amount(amount)
+                .fee(fee)
+                .idempotencyKey(idempotencyKey)
+                .description(description != null ? description : "Thanh toán qua mã VietQR")
+                .build());
+
+        // 5. Double-Entry Ledger (BR-GEN-05)
+        List<LedgerEntry> entries = new ArrayList<>();
+        entries.add(LedgerEntry.builder()
+                .transactionId(savedTx.getId())
+                .walletId(sourceWallet.getId())
+                .entryType(EntryType.DEBIT)
+                .amount(amount)
+                .balanceAfter(sourceWallet.getBalance().add(fee))
+                .build());
+
+        if (fee.compareTo(BigDecimal.ZERO) > 0) {
+            entries.add(LedgerEntry.builder()
+                    .transactionId(savedTx.getId())
+                    .walletId(sourceWallet.getId())
+                    .entryType(EntryType.DEBIT)
+                    .amount(fee)
+                    .balanceAfter(sourceWallet.getBalance())
+                    .build());
+        }
+
+        entries.add(LedgerEntry.builder()
+                .transactionId(savedTx.getId())
+                .walletId(destWallet.getId())
+                .entryType(EntryType.CREDIT)
+                .amount(amount)
+                .balanceAfter(destWallet.getBalance())
+                .build());
+
+        ledgerEntryRepository.saveAll(entries);
+
+        // 6. If dynamic QR was stored in DB, mark as USED (BR-SPEC-QR02)
+        if (qrCodeId != null) {
+            qrCodeRepository.findById(qrCodeId).ifPresent(qr -> {
+                qr.setIsUsed(true);
+                qr.setTransactionId(savedTx.getId());
+                qrCodeRepository.save(qr);
+            });
+        }
+
+        log.info("QR payment completed successfully. txId={}", savedTx.getId());
+
+        return com.walletapp.qrcode.dto.QrPaymentResponse.builder()
+                .transactionId(savedTx.getId())
+                .status(savedTx.getStatus().name())
+                .amount(savedTx.getAmount())
+                .recipientName(recipientName)
+                .createdAt(savedTx.getCreatedAt())
+                .build();
+    }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public TransferResponse executeTransferInTransaction(
