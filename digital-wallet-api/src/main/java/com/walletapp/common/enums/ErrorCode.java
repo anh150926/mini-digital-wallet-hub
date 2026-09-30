@@ -27,6 +27,7 @@ public enum ErrorCode {
     // 404 Not Found
     USER_NOT_FOUND("USER_NOT_FOUND", HttpStatus.NOT_FOUND, "Không tìm thấy thông tin người dùng"),
     WALLET_NOT_FOUND("WALLET_NOT_FOUND", HttpStatus.NOT_FOUND, "Không tìm thấy thông tin ví"),
+    DEST_WALLET_NOT_FOUND("DEST_WALLET_NOT_FOUND", HttpStatus.NOT_FOUND, "Không tìm thấy ví người nhận hoặc số điện thoại chưa đăng ký"),
 
     // 409 Conflict
     PHONE_ALREADY_EXISTS("PHONE_ALREADY_EXISTS", HttpStatus.CONFLICT, "Số điện thoại đã được đăng ký trong hệ thống"),
