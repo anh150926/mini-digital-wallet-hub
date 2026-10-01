@@ -102,11 +102,11 @@ Xây dựng ứng dụng Android đầy đủ: Đăng nhập, Dashboard, Chuyể
 | 3.11 | VietQrParser (Parse TLV + Verify CRC16 trên client) | `04-business-rules.md` (BR-SPEC-QR03) | 2h |
 
 ### Tiêu chí nghiệm thu:
-- [ ] Đăng nhập thành công trên Emulator, token lưu vào EncryptedSharedPrefs.
-- [ ] Dashboard hiển thị đúng số dư, 4 nút Quick Action hoạt động.
-- [ ] Chuyển tiền: Quét vân tay → Ký ECDSA → API trả 200 OK.
-- [ ] Camera quét được QR VietQR trong < 0.5 giây.
-- [ ] App hoạt động trên thiết bị thật (USB debug).
+- [x] Đăng nhập thành công trên Emulator, token lưu vào EncryptedSharedPrefs.
+- [x] Dashboard hiển thị đúng số dư, 4 nút Quick Action hoạt động.
+- [x] Chuyển tiền: Quét vân tay → Ký ECDSA → API trả 200 OK.
+- [x] Camera quét được QR VietQR trong < 0.5 giây.
+- [x] App hoạt động trên thiết bị thật (USB debug).
 
 ---
 
