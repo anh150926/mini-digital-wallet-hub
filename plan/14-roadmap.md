@@ -131,10 +131,10 @@ Xây dựng giao diện quản trị cho Admin/SuperAdmin/Owner.
 | 4.10 | Backend: Admin API endpoints (ADM-01~04) | `09-api-contract.md` | 4h |
 
 ### Tiêu chí nghiệm thu:
-- [ ] Admin đăng nhập → Thấy Dashboard với dữ liệu thật từ API.
-- [ ] Admin bấm khóa ví → Ví bị FROZEN → Mobile gọi API bị từ chối tức thì.
-- [ ] Trang Reconciliation hiển thị Σ DEBIT = Σ CREDIT (net = 0) cho giao dịch P2P.
-- [ ] USER role truy cập `/admin` → Bị redirect về Login.
+- [x] Admin đăng nhập → Thấy Dashboard với dữ liệu thật từ API.
+- [x] Admin bấm khóa ví → Ví bị FROZEN → Mobile gọi API bị từ chối tức thì.
+- [x] Trang Reconciliation hiển thị Σ DEBIT = Σ CREDIT (net = 0) cho giao dịch P2P.
+- [x] USER role truy cập `/admin` → Bị redirect về Login.
 
 ---
 
