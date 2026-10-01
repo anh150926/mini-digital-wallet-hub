@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface_light">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Top Bar: Greeting & Logout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvGreeting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Xin chào,"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary" />
+
+                    <TextView
+                        android:id="@+id/tvUserName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Người dùng ví"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btnLogout"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_quick_action"
+                    android:src="@drawable/ic_send"
+                    android:rotation="180"
+                    app:tint="@color/status_error"
+                    android:contentDescription="@string/logout" />
+            </LinearLayout>
+
+            <!-- Wallet Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardWallet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
+                app:strokeWidth="0dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card_wallet"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Mini Digital Wallet"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp"
+                            android:letterSpacing="0.05"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/btnToggleBalance"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_history"
+                            app:tint="@color/text_muted"
+                            android:contentDescription="Ẩn hiện số dư" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/my_balance_label"
+                        android:textColor="@color/text_muted"
+                        android:textSize="13sp"
+                        android:layout_marginTop="14dp" />
+
+                    <TextView
+                        android:id="@+id/tvBalance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 đ"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_emerald"
+                        android:layout_marginTop="4dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="18dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvWalletId"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ID: --"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp"
+                            android:ellipsize="middle"
+                            android:singleLine="true" />
+
+                        <TextView
+                            android:id="@+id/tvWalletStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ACTIVE"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/accent_emerald"
+                            android:background="@drawable/bg_quick_action"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Quick Actions Grid -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/quick_actions_title"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="4"
+                android:layout_marginBottom="28dp">
+
+                <!-- 1. Transfer -->
+                <LinearLayout
+                    android:id="@+id/actionTransfer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_quick_action">
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_send"
+                            app:tint="@color/primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_transfer"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <!-- 2. Topup -->
+                <LinearLayout
+                    android:id="@+id/actionTopup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_quick_action">
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_add_card"
+                            app:tint="@color/accent_emerald_dark" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_topup"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <!-- 3. Scan QR -->
+                <LinearLayout
+                    android:id="@+id/actionScanQr"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_quick_action">
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_qr_scan"
+                            app:tint="@color/primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_scan_qr"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <!-- 4. My QR -->
+                <LinearLayout
+                    android:id="@+id/actionMyQr"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_quick_action">
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_qr_code"
+                            app:tint="@color/primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_my_qr"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Recent Transactions Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/recent_transactions"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvSeeAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/see_all"
+                    android:textSize="13sp"
+                    android:textColor="@color/accent_emerald_dark"
+                    android:textStyle="bold"
+                    android:padding="6dp" />
+            </LinearLayout>
+
+            <!-- Empty State -->
+            <TextView
+                android:id="@+id/tvEmptyTransactions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_transactions"
+                android:textColor="@color/text_muted"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:padding="32dp"
+                android:visibility="gone" />
+
+            <!-- Transactions RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecentTransactions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

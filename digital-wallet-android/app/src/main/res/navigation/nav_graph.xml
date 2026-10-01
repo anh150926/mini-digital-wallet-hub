@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <!-- 1. Home Dashboard -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.walletapp.android.ui.home.HomeFragment"
+        android:label="Trang chủ"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_transfer"
+            app:destination="@id/transferFragment" />
+        <action
+            android:id="@+id/action_home_to_qrScanner"
+            app:destination="@id/qrScannerFragment" />
+        <action
+            android:id="@+id/action_home_to_qrGenerate"
+            app:destination="@id/qrGenerateFragment" />
+        <action
+            android:id="@+id/action_home_to_history"
+            app:destination="@id/historyFragment" />
+    </fragment>
+
+    <!-- 2. Transfer Flow -->
+    <fragment
+        android:id="@+id/transferFragment"
+        android:name="com.walletapp.android.ui.transfer.TransferFragment"
+        android:label="Chuyển tiền"
+        tools:layout="@layout/fragment_transfer">
+        <action
+            android:id="@+id/action_transfer_to_confirm"
+            app:destination="@id/transferConfirmFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transferConfirmFragment"
+        android:name="com.walletapp.android.ui.transfer.TransferConfirmFragment"
+        android:label="Xác nhận chuyển tiền"
+        tools:layout="@layout/fragment_transfer_confirm">
+        <action
+            android:id="@+id/action_confirm_to_result"
+            app:destination="@id/transferResultFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transferResultFragment"
+        android:name="com.walletapp.android.ui.transfer.TransferResultFragment"
+        android:label="Kết quả giao dịch"
+        tools:layout="@layout/fragment_transfer_result">
+        <action
+            android:id="@+id/action_result_to_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- 3. QR Scanner Flow -->
+    <fragment
+        android:id="@+id/qrScannerFragment"
+        android:name="com.walletapp.android.ui.qrscanner.QrScannerFragment"
+        android:label="Quét mã QR"
+        tools:layout="@layout/fragment_qr_scanner">
+        <action
+            android:id="@+id/action_scanner_to_result"
+            app:destination="@id/qrResultFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/qrResultFragment"
+        android:name="com.walletapp.android.ui.qrscanner.QrResultFragment"
+        android:label="Thanh toán QR"
+        tools:layout="@layout/fragment_qr_result">
+        <action
+            android:id="@+id/action_qrResult_to_transferResult"
+            app:destination="@id/transferResultFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <!-- 4. QR Generate Flow -->
+    <fragment
+        android:id="@+id/qrGenerateFragment"
+        android:name="com.walletapp.android.ui.qrgenerate.QrGenerateFragment"
+        android:label="Mã nhận tiền"
+        tools:layout="@layout/fragment_qr_generate" />
+
+    <!-- 5. History Flow -->
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.walletapp.android.ui.history.HistoryFragment"
+        android:label="Lịch sử giao dịch"
+        tools:layout="@layout/fragment_history" />
+
+</navigation>
