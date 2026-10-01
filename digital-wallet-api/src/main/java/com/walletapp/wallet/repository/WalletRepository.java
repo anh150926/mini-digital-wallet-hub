@@ -23,4 +23,8 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT w FROM Wallet w WHERE w.userId = :userId")
     Optional<Wallet> findByUserIdWithPessimisticLock(@Param("userId") UUID userId);
+
+    long countByStatus(com.walletapp.common.enums.WalletStatus status);
+
+    java.util.List<Wallet> findByUserIdIn(java.util.Collection<UUID> userIds);
 }
