@@ -158,10 +158,10 @@ Kiểm thử tải trọng, edge cases, và tích hợp toàn hệ thống.
 | 5.9 | Tối ưu hiệu năng (nếu cần): Index, Query, Pool size | `02-architecture-plan.md` | 2h |
 
 ### Tiêu chí nghiệm thu:
-- [ ] Kịch bản 1: Đúng 5 TX thành công, 495 bị reject, balance=0, 0 lỗi 500.
-- [ ] Kịch bản 2: 0 Deadlock, tổng tiền A+B bảo toàn.
-- [ ] Kịch bản 3: Cùng key khác payload → HTTP 422.
-- [ ] Tất cả luồng hoạt động end-to-end: Mobile → API → DB → Redis.
+- [x] Kịch bản 1: Đúng 5 TX thành công, 495 bị reject, balance=0, 0 lỗi 500.
+- [x] Kịch bản 2: 0 Deadlock, tổng tiền A+B bảo toàn.
+- [x] Kịch bản 3: Cùng key khác payload → HTTP 422.
+- [x] Tất cả luồng hoạt động end-to-end: Mobile → API → DB → Redis.
 
 ---
 
